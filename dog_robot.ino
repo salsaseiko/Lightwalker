@@ -78,13 +78,12 @@ void loop() {
 
 void valuta() {
    bool dritto = abs(diff) < THRESHOLD;
-//  if (diff != 0) {
   if (digitalRead(stopPin) == 0) {
     if (dritto) {
       avanti();
-      } else if (!dritto && diff < 0) {
+      } else if (diff < -THRESHOLD) {
         sinistra();
-      } else if (!dritto && diff > 0) {
+      } else if (diff > THRESHOLD) {
         destra();
       }
   }
@@ -115,7 +114,7 @@ int mediaMobile(int pin, int *misure, long &sum) {
 
 void avanti() {
   // gamba davanti spinge
-  myservo.write(zero1 + step);
+  myservo.write(zero1 + step +10);
   // gamba dietro segue
   myservo2.write(zero2 - step2);
   delay(speed);
@@ -125,7 +124,7 @@ void avanti() {
   myservo2.write(zero2);
   delay(speed);
 
-   myservo.write(zero1 - step);
+   myservo.write(zero1 - step -10);
   myservo2.write(zero2 + step2);
   delay(speed);
 
