@@ -20,8 +20,6 @@ Appena non percepisce più la luce si fermerà.
 - 2 resistenze da 220 Ohm
 - 2 servo motori SG-90
 
-## Schema
-
 ## Scelte progettuali
 ### Calcolo della direzione
 Il robot procede a muoversi appena percepisce una fonte luminosa dall'occhio costituito dal modulo LDR con uscita digitale (0 = percepisce luce, 1 = buio).
@@ -30,13 +28,16 @@ Decide in che direzione muoversi in base alla differenza di luce che percepisce 
 - Se tale differenza supera il THRESHOLD in negativo vira a sinistra, a destra altrimenti.
 
 ### Media mobile
-In quanto le LDR erano molto sensibili al minimo cambiamento della luce (passando da 0 al valore massimo al minimo avvicinamento della torcia), per rendere il passaggio più graduale ho utilizzato una tecnica a livello software chiamata "media mobile" (calcolata sia per la LDR a sinistra che a destra con una specifica funzione). 
+In quanto le LDR erano molto sensibili al minimo cambiamento della luce (passando da 0 ad un altissimo valore al minimo avvicinamento della torcia), per rendere il passaggio più graduale ho utilizzato una tecnica a livello software chiamata "media mobile" (calcolata sia per la LDR a sinistra che a destra con una specifica funzione). 
 Come risultato di quanto letto dalla fotoresistanza non si prende l’ultimo campione ma la media degli ultimi N campioni. Scegliendo un N alto si ha un passaggio più graduale, ma per questo robottino ho scelto un N più basso per renderlo abbastanza reattivo. 
 
-### Uso di un interrupt
+### Uso di interrupt
 Per far frenare il robot appena viene tolta la fonte di luce ho utilizzato un interrupt collegato al pin con il modulo LDR con uscita digitale. Appena accade una situazione di RISING (da 0 luce ad 1 buio), la ISR setta la variabile stop a true ed il robot si ferma.
 
-## Considerazioni
+### Controllo degli step con libreria QuickPID
+Sistemando la torcia vicina agli "occhi" il robot si muove a piccoli passi, che aumentano man mano che si allontana la luce.
+Per ottenere questo effetto ho utilizzato un controllo PID tramite libreria QuickPID: la correzione viene fatta aumentando (o diminuendo) il passo che il robot attua coi servomotori per raggiungere come obiettivo un valore massimo rispetto alla somma dei valori percepiti dalle due LDR.
+
 ### Possibili alternative
-Come alternativa alla soluzione software della media mobile si potrebbero usare dei condensatori...
+Come alternativa alla soluzione software della media mobile si potrebbero usare due condensatori collegati alla parte di circuito con le fotoresistenze in modalità filtro "passa-basso", così da attenuare il cambiamento rapido dei valori.
 
