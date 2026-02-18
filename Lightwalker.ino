@@ -16,7 +16,7 @@ int plusStep = 0; // step in più per avvicinarsi alla luce
 
 // var fotoresistenze
 int stopPin = 34; // 1 = buio, 0 = luce
-bool stop = false;
+volatile bool stop = false;
 
 int ldrL = 14;
 int ldrR = 27;
