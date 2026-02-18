@@ -5,7 +5,7 @@
 Servo myservo;
 Servo myservo2;  
 
-int THRESHOLD = 200; 
+const float THRESHOLD = 0.15; 
 int speed = 300; 
 
 int zero1 = 90;
@@ -26,18 +26,18 @@ int misureR[N];
 int idx = 0;
 long sumL = 0;
 long sumR = 0;
-int diff = 0;
+//int diff = 0;
+float diff = 0;
 int left = 0;
 int right = 0;
 
-int luceAmbiente = 0; // luce percepita all'inizio
-int lastStop = 1; 
-
 // var per PID
-float luceInput = luceAmbiente; // poi aggiornata con la somma delle due letture di ldr
+float luceInput = 0; // poi aggiornata con la somma delle due letture di ldr
 float output; // output del PID, da mappare sul plusStep
-float luceObiettivo = 2000 + luceAmbiente; 
+float luceObiettivo = 2000; 
 float Kp = 0.8, Ki = 0.0, Kd = 0.07;
+
+int lastStop = 1; 
 
 QuickPID lucePID(&luceInput, &output, &luceObiettivo);
 
@@ -58,11 +58,6 @@ void setup() {
   myservo.write(zero1);  
   myservo2.write(zero2); 
 
-// setup del threshold 
-  calibraLuce();
-  THRESHOLD += luceAmbiente;
-  THRESHOLD = constrain(THRESHOLD, 100, 800);
-
 // setup interrupt = se non c'è luce, interrompi la camminata
   attachInterrupt(digitalPinToInterrupt(stopPin), ISR, RISING); // 0 -> 1 ARRIVA IL BUIO
 
@@ -82,9 +77,10 @@ void loop() {
 
   idx = (idx + 1) % N;
 
-  diff = right - left;
+  float tot = right + left;
+  diff = (float)(right - left) / tot;
 
-  luceInput = right + left;
+  luceInput = tot;
 
 // NON attuo la correzione allo step se la luce è stata appena accesa (sennò va subito veloce anche se vicina) --> condizione di "FALLING"
  if (currentStop != lastStop && currentStop == 0) { 
@@ -104,16 +100,18 @@ void loop() {
 }
 
 void valuta() {
-   bool dritto = abs(diff) < THRESHOLD;
-  if (digitalRead(stopPin) == 0) {
-    if (dritto) {
-      avanti();
-      } else if (diff < -THRESHOLD) {
-        sinistra();
-      } else if (diff > THRESHOLD) {
-        destra();
-      }
-  }
+if (digitalRead(stopPin) == 0) {
+
+        if (abs(diff) < THRESHOLD) {
+            avanti();
+        }
+        else if (diff < -THRESHOLD) {
+            sinistra();
+        }
+        else if (diff > THRESHOLD) {
+            destra();
+        }
+    }
 }
 
 /*void stampa() {
@@ -187,23 +185,5 @@ void destra() {
   delay(speed);
 
 }
-
-void calibraLuce() {
-  const int campioni = 30;
-  long totL = 0;
-  long totR = 0;
-
-  for (int i = 0; i < campioni; i++) {
-    totL += analogRead(ldrL);
-    totR += analogRead(ldrR);
-    delay(10);
-  }
-
-  int baseL = totL / campioni;
-  int baseR = totR / campioni;
-  luceAmbiente = (baseL + baseR) / 2;
-
-}
-
 
 
